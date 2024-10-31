@@ -2,11 +2,11 @@
 use std::io::{self, Write};
 use std::process;
 
-fn print_bash_icon() { 
+fn print_bash_icon() {
     print!("$ ")
 }
 
-fn command_not_found(command: &str) { 
+fn command_not_found(command: &str) {
     println!("{}: not found", command);
 }
 
@@ -18,7 +18,6 @@ fn type_command(args: Option<&str>) {
         None => eprintln!("please specify your command"),
         Some(c) => command_not_found(c),
     }
-
 }
 
 fn echo_command(args: Option<&str>) {
@@ -35,8 +34,8 @@ fn process_command(full_command: &str) {
     match command {
         Some("exit") => process::exit(0),
         Some("echo") => echo_command(args),
-        Some("type") => type_command(args) ,
-        Some(c) =>  command_not_found(c),
+        Some("type") => type_command(args),
+        Some(c) => command_not_found(c),
         None => print_bash_icon(),
     }
 }
