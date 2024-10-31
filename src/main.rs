@@ -22,7 +22,7 @@ fn type_command(args: Option<&str>, path: &str) {
             for sub_path in path.split(":") {
                 let p = Path::new(sub_path).join(c);
                 if p.exists() {
-                    println!("{:?}", p);
+                    println!("{} is {}",c, p.display().to_string());
                     return;
                 }
             }
