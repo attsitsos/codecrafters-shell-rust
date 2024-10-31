@@ -22,7 +22,7 @@ fn type_command(args: Option<&str>, path: &str) {
             for sub_path in path.split(":") {
                 let p = Path::new(sub_path).join(c);
                 if p.exists() {
-                    println!("{} is {}",c, p.display().to_string());
+                    println!("{} is {}", c, p.display().to_string());
                     return;
                 }
             }
@@ -38,6 +38,48 @@ fn echo_command(args: Option<&str>) {
     }
 }
 
+fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
+    for sub_path in path.split(":") {
+        let p = Path::new(sub_path).join(command);
+        if p.exists() {
+            let mut cmd = process::Command::new(command);
+            if let Some(arg) = args {
+                for a in arg.split(' ') {
+                    cmd.arg(a);
+                }
+            }
+            cmd.stdout(process::Stdio::piped());
+            cmd.stderr(process::Stdio::piped());
+
+            let spawn = cmd.spawn();
+            if let Err(e) = spawn {
+                eprintln!("error spawning a new process: {}", e);
+                return;
+            }
+            let spawn = spawn.unwrap();
+            let output = spawn.wait_with_output();
+            match output {
+                Ok(n) => {
+                    if n.status.success() {
+                        let out = String::from_utf8(n.stdout).unwrap_or_else(|e| {
+                            format!("error converting output to utf-8 string: {}", e)
+                        });
+                        print!("{}", out);
+                    } else {
+                        let out = String::from_utf8(n.stderr).unwrap_or_else(|e| {
+                            format!("error converting output to utf-8 string: {}", e)
+                        });
+                        eprint!("{}", out);
+                    }
+                }
+                Err(e) => eprintln!("{}", e),
+            }
+            return;
+        }
+    }
+    command_not_found(command);
+}
+
 fn process_command(full_command: &str, path: &str) {
     let mut split = full_command.splitn(2, ' ');
     let command = split.next();
@@ -46,7 +88,7 @@ fn process_command(full_command: &str, path: &str) {
         Some("exit") => process::exit(0),
         Some("echo") => echo_command(args),
         Some("type") => type_command(args, path),
-        Some(c) => command_not_found(c),
+        Some(c) => run_ext_command(c, args, path),
         None => print_bash_icon(),
     }
 }
