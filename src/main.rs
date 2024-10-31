@@ -22,7 +22,10 @@ fn main() {
         io::stdout().flush().unwrap();
         let stdin = io::stdin();
         let mut input = String::new();
-        stdin.read_line(&mut input).unwrap();
+        if let Err(error) = stdin.read_line(&mut input) {
+            eprintln!("\rstdin: failed to read. {}", error);
+            process::exit(1);
+        }
         process_command(input.trim());
     }
 }
