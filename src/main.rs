@@ -7,7 +7,7 @@ fn print_bash_icon() {
 }
 
 fn command_not_found(command: &str) { 
-    println!("{}: command not found", command);
+    println!("{}: not found", command);
 }
 
 fn type_command(args: Option<&str>) {
