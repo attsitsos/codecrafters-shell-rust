@@ -1,7 +1,7 @@
 use std::env;
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
 
 fn print_bash_icon() {
@@ -12,6 +12,15 @@ fn command_not_found(command: &str) {
     println!("{}: not found", command);
 }
 
+fn find_command_in_path(cmd: &str, path: &str) -> Option<PathBuf> {
+    for sub_path in path.split(":") {
+        let p = Path::new(sub_path).join(cmd);
+        if p.exists() {
+            return Some(p);
+        }
+    }
+    None
+}
 fn type_command(args: Option<&str>, path: &str) {
     match args {
         Some("exit") => println!("exit is a shell builtin"),
@@ -19,14 +28,11 @@ fn type_command(args: Option<&str>, path: &str) {
         Some("type") => println!("type is a shell builtin"),
         None => eprintln!("please specify your command"),
         Some(c) => {
-            for sub_path in path.split(":") {
-                let p = Path::new(sub_path).join(c);
-                if p.exists() {
-                    println!("{} is {}", c, p.display().to_string());
-                    return;
-                }
+            if let Some(pb) = find_command_in_path(c, path) {
+                println!("{} is {}", c, pb.display().to_string());
+            } else {
+                command_not_found(c);
             }
-            command_not_found(c);
         }
     }
 }
@@ -34,14 +40,14 @@ fn type_command(args: Option<&str>, path: &str) {
 fn echo_command(args: Option<&str>) {
     match args {
         Some(a) => println!("{}", a),
-        None => println!(""),
+        None => println!(),
     }
 }
 
 fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
-    for sub_path in path.split(":") {
-        let p = Path::new(sub_path).join(command);
-        if p.exists() {
+    match find_command_in_path(command, path){
+        None => command_not_found(command),
+        Some(_) => {
             let mut cmd = process::Command::new(command);
             if let Some(arg) = args {
                 for a in arg.split(' ') {
@@ -74,10 +80,8 @@ fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
                 }
                 Err(e) => eprintln!("{}", e),
             }
-            return;
         }
     }
-    command_not_found(command);
 }
 
 fn process_command(full_command: &str, path: &str) {
