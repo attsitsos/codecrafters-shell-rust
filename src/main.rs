@@ -46,7 +46,7 @@ fn echo_command(args: Option<&str>) {
 }
 
 fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
-    match find_command_in_path(command, path){
+    match find_command_in_path(command, path) {
         None => command_not_found(command),
         Some(_) => {
             let mut cmd = process::Command::new(command);
@@ -94,9 +94,10 @@ fn process_command(full_command: &str, path: &str) {
         Some("echo") => echo_command(args),
         Some("type") => type_command(args, path),
         Some("pwd") => {
-            let pwd = env::var("PWD").expect("PWD environment variable not exist");
+            let pwd = env::var("PWD")
+                .unwrap_or_else(|e| format!("PWD environment variable not exist: {}", e));
             println!("{}", pwd);
-        },
+        }
         Some(c) => run_ext_command(c, args, path),
         None => print_bash_icon(),
     }
