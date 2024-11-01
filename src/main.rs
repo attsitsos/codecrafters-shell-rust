@@ -26,6 +26,7 @@ fn type_command(args: Option<&str>, path: &str) {
         Some("exit") => println!("exit is a shell builtin"),
         Some("echo") => println!("echo is a shell builtin"),
         Some("type") => println!("type is a shell builtin"),
+        Some("pwd") => println!("pwd is a shell builtin"),
         None => eprintln!("please specify your command"),
         Some(c) => {
             if let Some(pb) = find_command_in_path(c, path) {
@@ -92,6 +93,10 @@ fn process_command(full_command: &str, path: &str) {
         Some("exit") => process::exit(0),
         Some("echo") => echo_command(args),
         Some("type") => type_command(args, path),
+        Some("pwd") => {
+            let pwd = env::var("PWD").expect("PWD environment variable not exist");
+            println!("{}", pwd);
+        },
         Some(c) => run_ext_command(c, args, path),
         None => print_bash_icon(),
     }
