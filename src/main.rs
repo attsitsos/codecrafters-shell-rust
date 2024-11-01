@@ -90,6 +90,13 @@ fn cd_command(args: Option<&str>) {
             eprintln!("please specify the path you need to navigate");
         }
         Some(a) => {
+            if a == "~" {
+                match env::var("HOME") {
+                    Ok(p) => env::set_current_dir(p).unwrap(),
+                    Err(e) => eprintln!("cannot determine home directory: {}", e),
+                }
+                return;
+            }
             let p = Path::new(a);
             if !p.exists() {
                 eprintln!("cd: {}: No such file or directory", a);
@@ -99,7 +106,6 @@ fn cd_command(args: Option<&str>) {
                 eprintln!("{} is not a directory", a);
                 return;
             }
-
             env::set_current_dir(p).unwrap();
         }
     }
