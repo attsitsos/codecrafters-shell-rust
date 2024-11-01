@@ -23,10 +23,9 @@ fn find_command_in_path(cmd: &str, path: &str) -> Option<PathBuf> {
 }
 fn type_command(args: Option<&str>, path: &str) {
     match args {
-        Some("exit") => println!("exit is a shell builtin"),
-        Some("echo") => println!("echo is a shell builtin"),
-        Some("type") => println!("type is a shell builtin"),
-        Some("pwd") => println!("pwd is a shell builtin"),
+        Some("exit") | Some("echo") | Some("type") | Some("pwd") | Some("cd") => {
+            println!("{} is a shell builtin", args.unwrap())
+        }
         None => eprintln!("please specify your command"),
         Some(c) => {
             if let Some(pb) = find_command_in_path(c, path) {
@@ -85,16 +84,15 @@ fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
     }
 }
 
-
 fn cd_command(args: Option<&str>) {
     match args {
         None => {
             eprintln!("please specify the path you need to navigate");
-        },
+        }
         Some(a) => {
             let p = Path::new(a);
             if !p.exists() {
-                eprintln!("{} not exists", a);
+                eprintln!("cd: {}: No such file or directory", a);
                 return;
             }
             if !p.is_dir() {
@@ -121,10 +119,10 @@ fn process_command(full_command: &str, path: &str) {
                 Ok(p) => println!("{}", p.display()),
                 Err(e) => eprintln!("{}", e),
             }
-        },
+        }
         Some("cd") => {
             cd_command(args);
-        },
+        }
         Some(c) => run_ext_command(c, args, path),
         None => print_bash_icon(),
     }
