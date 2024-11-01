@@ -85,6 +85,28 @@ fn run_ext_command(command: &str, args: Option<&str>, path: &str) {
     }
 }
 
+
+fn cd_command(args: Option<&str>) {
+    match args {
+        None => {
+            eprintln!("please specify the path you need to navigate");
+        },
+        Some(a) => {
+            let p = Path::new(a);
+            if !p.exists() {
+                eprintln!("{} not exists", a);
+                return;
+            }
+            if !p.is_dir() {
+                eprintln!("{} is not a directory", a);
+                return;
+            }
+
+            env::set_current_dir(p).unwrap();
+        }
+    }
+}
+
 fn process_command(full_command: &str, path: &str) {
     let mut split = full_command.splitn(2, ' ');
     let command = split.next();
@@ -94,10 +116,15 @@ fn process_command(full_command: &str, path: &str) {
         Some("echo") => echo_command(args),
         Some("type") => type_command(args, path),
         Some("pwd") => {
-            let pwd = env::var("PWD")
-                .unwrap_or_else(|e| format!("PWD environment variable not exist: {}", e));
-            println!("{}", pwd);
-        }
+            let path = env::current_dir();
+            match path {
+                Ok(p) => println!("{}", p.display()),
+                Err(e) => eprintln!("{}", e),
+            }
+        },
+        Some("cd") => {
+            cd_command(args);
+        },
         Some(c) => run_ext_command(c, args, path),
         None => print_bash_icon(),
     }
